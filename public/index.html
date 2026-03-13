@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CreditFlow.eth — Decentralized AI Credit Marketplace</title>
+  <meta name="description" content="Resell unused AI API credits for USDC on Base. Pay-per-query via x402 micropayments. No KYC, no subscriptions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#" class="logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        CreditFlow<span class="logo-eth">.eth</span>
+      </a>
+      <nav class="topnav">
+        <a href="#marketplace" class="topnav-link active" data-tab="marketplace">Marketplace</a>
+        <a href="#try" class="topnav-link" data-tab="try">Try x402</a>
+        <a href="#sell" class="topnav-link" data-tab="sell">Sell Credits</a>
+        <a href="#how" class="topnav-link" data-tab="how">How It Works</a>
+      </nav>
+      <div class="topbar-right">
+        <div class="net-badge"><span class="net-dot"></span>Base Sepolia</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero — compact banner -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-tag">x402 Protocol × ENS × Base</div>
+        <h1>Turn Idle AI Credits<br/>Into <span class="hero-em">USDC</span></h1>
+        <p class="hero-p">Decentralized marketplace: sellers proxy their AI API keys, buyers pay per query in USDC. Anonymous, instant, no KYC.</p>
+      </div>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-val" id="s-proxies">—</span>
+          <span class="stat-label">Proxies</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <span class="stat-val" id="s-models">—</span>
+          <span class="stat-label">Models</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <span class="stat-val" id="s-volume">—</span>
+          <span class="stat-label">Volume</span>
+        </div>
+        <div class="stat-sep"></div>
+        <div class="stat">
+          <span class="stat-val" id="s-txns">—</span>
+          <span class="stat-label">Txns</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MARKETPLACE ═══ -->
+  <section class="panel" id="marketplace">
+    <div class="panel-head">
+      <div>
+        <h2>Marketplace</h2>
+        <p class="panel-sub">Live proxy sellers. Browse models, pricing, and status.</p>
+      </div>
+      <input type="text" id="search" class="search-input" placeholder="Search models, proxies..." />
+    </div>
+    <div class="proxy-list" id="proxy-list">
+      <div class="skel"></div><div class="skel"></div>
+    </div>
+  </section>
+
+  <!-- ═══ TRY x402 ═══ -->
+  <section class="panel panel-alt" id="try">
+    <div class="panel-head">
+      <div>
+        <h2>Try a Query</h2>
+        <p class="panel-sub">Experience the x402 payment lifecycle. Free models bypass payment.</p>
+      </div>
+    </div>
+
+    <div class="try-grid">
+      <!-- Input Card -->
+      <div class="card">
+        <div class="card-label">① Send</div>
+        <div class="field">
+          <label>Model</label>
+          <select id="try-model"><option>Loading…</option></select>
+        </div>
+        <div class="field">
+          <label>Prompt</label>
+          <textarea id="try-prompt" rows="3" placeholder="Ask anything...">What is x402 and how does CreditFlow.eth work?</textarea>
+        </div>
+        <button class="btn btn-accent" id="btn-send">Send Query →</button>
+      </div>
+
+      <!-- Response Area -->
+      <div class="card try-response-area">
+        <!-- 402 -->
+        <div id="card-402" style="display:none">
+          <div class="card-label card-label-warn">② 402 Payment Required</div>
+          <pre class="codeblock" id="pre-402"></pre>
+          <p class="hint">Send USDC on Base Sepolia, then paste the tx hash:</p>
+          <div class="field">
+            <label>Transaction Hash</label>
+            <input type="text" id="try-tx" placeholder="0x..." />
+          </div>
+          <button class="btn btn-accent" id="btn-retry">Verify & Retry →</button>
+        </div>
+
+        <!-- OK -->
+        <div id="card-ok" style="display:none">
+          <div class="card-label card-label-ok">③ AI Response</div>
+          <div id="pre-ok"></div>
+        </div>
+
+        <!-- Error -->
+        <div id="card-err" style="display:none">
+          <div class="card-label card-label-err">Error</div>
+          <pre class="codeblock codeblock-err" id="pre-err"></pre>
+        </div>
+
+        <!-- Empty state -->
+        <div class="try-empty" id="try-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <p>Send a query to see the x402 flow in action</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SELL CREDITS ═══ -->
+  <section class="panel" id="sell">
+    <div class="panel-head">
+      <div>
+        <h2>Sell Your Credits</h2>
+        <p class="panel-sub">Register your proxy, add models, and start earning USDC per query.</p>
+      </div>
+    </div>
+
+    <div class="sell-grid">
+      <!-- Register Proxy -->
+      <div class="card">
+        <div class="card-label">Step 1 — Register Proxy</div>
+        <div class="field">
+          <label>ENS Name</label>
+          <input type="text" id="reg-ens" placeholder="claude-proxy.yourname.eth" />
+        </div>
+        <div class="field">
+          <label>Proxy URL</label>
+          <input type="text" id="reg-url" placeholder="https://your-proxy.vercel.app" />
+        </div>
+        <div class="field">
+          <label>Wallet (USDC recipient)</label>
+          <input type="text" id="reg-wallet" placeholder="0x..." />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea id="reg-desc" rows="2" placeholder="What makes your proxy stand out?"></textarea>
+        </div>
+        <button class="btn btn-accent" id="btn-register">Register Proxy</button>
+        <div id="reg-result" class="form-msg"></div>
+      </div>
+
+      <!-- Add Model -->
+      <div class="card">
+        <div class="card-label">Step 2 — Add Custom Model</div>
+        <div class="field">
+          <label>Your Proxy</label>
+          <select id="mod-proxy"><option value="">Select proxy…</option></select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Model ID</label>
+            <input type="text" id="mod-id" placeholder="anthropic/claude-4.6-opus" />
+          </div>
+          <div class="field">
+            <label>Display Name</label>
+            <input type="text" id="mod-name" placeholder="Claude 4.6 Opus" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Provider</label>
+          <select id="mod-provider">
+            <option value="anthropic">Anthropic</option>
+            <option value="openai">OpenAI</option>
+            <option value="google">Google</option>
+            <option value="nvidia">NVIDIA</option>
+            <option value="xai">xAI</option>
+            <option value="meta">Meta</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="mistral">Mistral</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>$/1k Input</label>
+            <input type="number" id="mod-input" step="0.0001" value="0.003" />
+          </div>
+          <div class="field">
+            <label>$/1k Output</label>
+            <input type="number" id="mod-output" step="0.0001" value="0.015" />
+          </div>
+          <div class="field">
+            <label>Max Ctx</label>
+            <input type="number" id="mod-ctx" value="200000" />
+          </div>
+        </div>
+        <button class="btn btn-accent" id="btn-add-model">Add Model</button>
+        <div id="mod-result" class="form-msg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ HOW IT WORKS ═══ -->
+  <section class="panel panel-alt" id="how">
+    <div class="panel-head">
+      <div>
+        <h2>How It Works</h2>
+        <p class="panel-sub">The x402 payment lifecycle in six steps.</p>
+      </div>
+    </div>
+    <div class="flow-row">
+      <div class="flow-step"><div class="flow-n">1</div><h4>Mint ENS Subname</h4><p>Create <code>proxy.you.eth</code> with text records for models & pricing.</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-n">2</div><h4>Deploy Proxy</h4><p>Run CreditFlow server with your AI API key.</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-n">3</div><h4>Buyer Sends Prompt</h4><p>HTTP POST to <code>/v1/chat/completions</code>. No API key.</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-n">4</div><h4>402 Response</h4><p>Server demands USDC payment with amount & recipient.</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-n">5</div><h4>Pay USDC</h4><p>Sub-cent transfer on Base. Instant confirmation.</p></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step"><div class="flow-n">6</div><h4>AI Response</h4><p>Retry with tx proof. Verified → proxied to AI.</p></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="foot">
+    <div class="foot-inner">
+      <span>CreditFlow.eth</span>
+      <span>Built for ETHMumbai 🇮🇳</span>
+      <span>x402 × ENS × Base Sepolia</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
