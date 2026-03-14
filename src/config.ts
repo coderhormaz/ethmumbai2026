@@ -1,10 +1,15 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+const fallbackModels = (process.env.FALLBACK_MODELS || 'claude-3.5-sonnet,gpt-4o,grok-beta,gemini-pro')
+  .split(',')
+  .map((model) => model.trim())
+  .filter(Boolean);
+
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
 
-  // L1 Sepolia RPC for ENS resolution
+  // ENS-enabled Ethereum RPC (Sepolia for hackathon/testnet setups)
   l1RpcUrl: process.env.L1_RPC_URL || '',
 
   // Base Sepolia for x402 payments
@@ -18,13 +23,14 @@ export const config = {
   // AI provider
   aiProviderApiKey: process.env.AI_PROVIDER_API_KEY || '',
   aiProviderUrl: process.env.AI_PROVIDER_URL || 'https://openrouter.ai/api/v1/chat/completions',
+  demoUpstreamModel: process.env.DEMO_UPSTREAM_MODEL || '',
 
   // Seller identity
   proxySellerEns: process.env.PROXY_SELLER_ENS || '',
 
   // Fallback metadata when ENS is unavailable (for local dev / testnet)
   fallback: {
-    models: (process.env.FALLBACK_MODELS || 'claude-3.5-sonnet,gpt-4o,grok-beta,gemini-pro').split(',').map(m => m.trim()),
+    models: fallbackModels,
     pricePer1kInput: process.env.FALLBACK_PRICE_INPUT || '0.0008',
     pricePer1kOutput: process.env.FALLBACK_PRICE_OUTPUT || '0.0024',
     recipient: process.env.FALLBACK_RECIPIENT || '',

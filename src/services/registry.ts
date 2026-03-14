@@ -9,6 +9,8 @@ export interface ProxyEntry {
   status: string;
   total_queries: number;
   total_earned_usdc: number;
+  api_key?: string;
+  api_endpoint?: string;
   created_at: string;
   updated_at: string;
   models?: ModelEntry[];
@@ -65,6 +67,8 @@ export async function registerProxy(entry: {
   proxy_url: string;
   wallet_address: string;
   description?: string;
+  api_key?: string;
+  api_endpoint?: string;
 }): Promise<ProxyEntry> {
   const { data, error } = await supabase
     .from('proxies')
@@ -73,6 +77,8 @@ export async function registerProxy(entry: {
       proxy_url: entry.proxy_url,
       wallet_address: entry.wallet_address,
       description: entry.description || '',
+      api_key: entry.api_key || '',
+      api_endpoint: entry.api_endpoint || 'https://openrouter.ai/api/v1/chat/completions',
     })
     .select()
     .single();

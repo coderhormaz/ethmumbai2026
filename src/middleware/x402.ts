@@ -37,14 +37,19 @@ export async function x402Middleware(
       costPerRequest =
         parseFloat(String(match.price_per_1k_input)) +
         parseFloat(String(match.price_per_1k_output));
-      // Get the proxy's wallet from its associated proxy
+      // Get the proxy's wallet and API credentials
       const { supabase } = await import('../services/supabase');
       const { data: proxy } = await supabase
         .from('proxies')
-        .select('wallet_address')
+        .select('wallet_address, api_key, api_endpoint')
         .eq('id', match.proxy_id)
         .single();
       recipient = proxy?.wallet_address || config.fallback.recipient;
+      // Attach proxy credentials for the route handler
+      (req as any)._proxyCreds = {
+        api_key: proxy?.api_key || '',
+        api_endpoint: proxy?.api_endpoint || '',
+      };
     } else {
       // Model not in DB — use fallback pricing but still allow it
       costPerRequest =
@@ -56,6 +61,12 @@ export async function x402Middleware(
     // FREE models — skip payment entirely
     if (costPerRequest <= 0) {
       console.log(`[x402] Free model "${requestedModel}" — skipping payment.`);
+      // Still attach creds for free models
+      if (!(req as any)._proxyCreds && match) {
+        const { supabase } = await import('../services/supabase');
+        const { data: px } = await supabase.from('proxies').select('api_key, api_endpoint').eq('id', match.proxy_id).single();
+        (req as any)._proxyCreds = { api_key: px?.api_key || '', api_endpoint: px?.api_endpoint || '' };
+      }
       next();
       return;
     }

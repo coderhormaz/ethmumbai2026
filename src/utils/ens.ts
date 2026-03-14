@@ -10,16 +10,102 @@ export interface ProxyMetadata {
   status?: string;
 }
 
+let ensProvider: ethers.JsonRpcProvider | null = null;
+
+function getEnsProvider(): ethers.JsonRpcProvider | null {
+  if (!config.l1RpcUrl) {
+    return null;
+  }
+
+  if (!ensProvider) {
+    ensProvider = new ethers.JsonRpcProvider(config.l1RpcUrl);
+  }
+
+  return ensProvider;
+}
+
+export function normalizeEnsName(ensName: string): string {
+  const candidate = ensName?.trim();
+
+  if (!candidate) {
+    throw new Error('ENS name is required.');
+  }
+
+  try {
+    return ethers.ensNormalize(candidate);
+  } catch {
+    throw new Error(`Invalid ENS name: ${candidate}`);
+  }
+}
+
+export function normalizeWalletAddress(address: string): string {
+  try {
+    return ethers.getAddress(address.trim());
+  } catch {
+    throw new Error('Invalid wallet address.');
+  }
+}
+
+export function normalizeProxyUrl(proxyUrl: string): string {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(proxyUrl.trim());
+  } catch {
+    throw new Error('Invalid proxy URL.');
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error('Proxy URL must start with http:// or https://');
+  }
+
+  return parsed.toString();
+}
+
+export async function verifyEnsWalletBinding(ensName: string, walletAddress: string): Promise<void> {
+  const provider = getEnsProvider();
+
+  if (!provider) {
+    return;
+  }
+
+  const [resolvedAddress, primaryName] = await Promise.all([
+    provider.resolveName(ensName),
+    provider.lookupAddress(walletAddress).catch(() => null),
+  ]);
+
+  if (!resolvedAddress) {
+    throw new Error(
+      `ENS name ${ensName} does not resolve to an address. Set its address record to ${walletAddress} before registering.`
+    );
+  }
+
+  if (ethers.getAddress(resolvedAddress) !== walletAddress) {
+    throw new Error(
+      `ENS name ${ensName} resolves to ${resolvedAddress}, not ${walletAddress}. Update the address record or submit the matching wallet.`
+    );
+  }
+
+  if (primaryName) {
+    const normalizedPrimaryName = normalizeEnsName(primaryName);
+    if (normalizedPrimaryName !== ensName) {
+      console.warn(`[ENS] Wallet ${walletAddress} has primary name ${normalizedPrimaryName}; continuing because forward resolution matches ${ensName}.`);
+    }
+  }
+}
+
 /**
  * Resolve proxy metadata from ENS text records.
  * Falls back to env-based config when ENS is unavailable (local dev / testnet).
  */
 export async function getProxyMetadata(ensName: string): Promise<ProxyMetadata> {
+  const normalizedName = normalizeEnsName(ensName);
+
   // Try ENS resolution first
-  if (config.l1RpcUrl) {
+  const provider = getEnsProvider();
+  if (provider) {
     try {
-      const provider = new ethers.JsonRpcProvider(config.l1RpcUrl);
-      const resolver = await provider.getResolver(ensName);
+      const resolver = await provider.getResolver(normalizedName);
 
       if (resolver) {
         const [modelsRaw, priceInputRaw, priceOutputRaw, recipientRaw, urlRaw, statusRaw] =
@@ -33,19 +119,19 @@ export async function getProxyMetadata(ensName: string): Promise<ProxyMetadata> 
           ]);
 
         if (recipientRaw) {
-          console.log(`[ENS] Resolved metadata for ${ensName}`);
+          console.log(`[ENS] Resolved metadata for ${normalizedName}`);
           return {
             models: modelsRaw ? modelsRaw.split(',').map((m) => m.trim()) : [],
             pricePer1kInput: priceInputRaw || '0',
             pricePer1kOutput: priceOutputRaw || '0',
-            recipient: recipientRaw,
+            recipient: normalizeWalletAddress(recipientRaw),
             url: urlRaw || undefined,
             status: statusRaw || 'online',
           };
         }
       }
     } catch (err: any) {
-      console.warn(`[ENS] Resolution failed for ${ensName}: ${err.message}. Falling back to config.`);
+      console.warn(`[ENS] Resolution failed for ${normalizedName}: ${err.message}. Falling back to config.`);
     }
   }
 
@@ -57,25 +143,27 @@ export async function getProxyMetadata(ensName: string): Promise<ProxyMetadata> 
     );
   }
 
-  console.log(`[ENS] Using fallback metadata for ${ensName}`);
+  console.log(`[ENS] Using fallback metadata for ${normalizedName}`);
   return {
     models: config.fallback.models,
     pricePer1kInput: config.fallback.pricePer1kInput,
     pricePer1kOutput: config.fallback.pricePer1kOutput,
-    recipient: config.fallback.recipient,
+    recipient: normalizeWalletAddress(config.fallback.recipient),
     status: 'online',
   };
 }
 
 /**
- * Resolve an ENS name to a proxy URL (from its text record or content hash).
+ * Resolve an ENS name to a proxy URL from its text record.
  */
 export async function resolveProxyUrl(ensName: string): Promise<string | null> {
-  if (!config.l1RpcUrl) return null;
+  const provider = getEnsProvider();
+  if (!provider) return null;
+
+  const normalizedName = normalizeEnsName(ensName);
 
   try {
-    const provider = new ethers.JsonRpcProvider(config.l1RpcUrl);
-    const resolver = await provider.getResolver(ensName);
+    const resolver = await provider.getResolver(normalizedName);
     if (!resolver) return null;
 
     const url = await resolver.getText('url');

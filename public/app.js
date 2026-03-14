@@ -16,6 +16,8 @@ const dom = {
   regUrl:      $('reg-url'),
   regWallet:   $('reg-wallet'),
   regDesc:     $('reg-desc'),
+  regApiKey:   $('reg-apikey'),
+  regEndpoint: $('reg-endpoint'),
   btnRegister: $('btn-register'),
   regResult:   $('reg-result'),
   modProxy:    $('mod-proxy'),
@@ -107,7 +109,10 @@ function renderProxies(proxies) {
       <div class="proxy-card">
         <div class="pc-top">
           <span class="pc-ens">${esc(p.ens_name)}</span>
-          <span class="pc-badge ${badge}">${p.status}</span>
+          <span style="display:flex;gap:6px;align-items:center">
+            ${p.has_api_key ? '<span class="pc-badge pc-badge-on" title="API key configured" style="font-size:.58rem">🔑 KEY</span>' : ''}
+            <span class="pc-badge ${badge}">${p.status}</span>
+          </span>
         </div>
         <div class="pc-desc">${esc(p.description || 'No description.')}</div>
         <div class="pc-tags">${models.map(m => `<span class="pc-tag" title="${esc(m.provider)}">${esc(m.display_name)}</span>`).join('')}</div>
@@ -154,6 +159,8 @@ dom.btnRegister.addEventListener('click', async () => {
   const url = dom.regUrl.value.trim();
   const wallet = dom.regWallet.value.trim();
   const desc = dom.regDesc.value.trim();
+  const apiKey = dom.regApiKey.value.trim();
+  const apiEndpoint = dom.regEndpoint.value.trim();
   if (!ens || !url || !wallet) { showMsg(dom.regResult, 'error', 'ENS, URL, and Wallet are required.'); return; }
 
   dom.btnRegister.disabled = true;
@@ -161,7 +168,7 @@ dom.btnRegister.addEventListener('click', async () => {
   try {
     const r = await fetch(`${API}/api/proxies`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ens_name: ens, proxy_url: url, wallet_address: wallet, description: desc }),
+      body: JSON.stringify({ ens_name: ens, proxy_url: url, wallet_address: wallet, description: desc, api_key: apiKey, api_endpoint: apiEndpoint || 'https://openrouter.ai/api/v1/chat/completions' }),
     });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Failed');

@@ -40,10 +40,11 @@ npm run dev
 
 | Variable | Description |
 |---|---|
-| `L1_RPC_URL` | Ethereum Sepolia RPC for ENS resolution |
+| `L1_RPC_URL` | ENS-enabled Ethereum RPC for forward/reverse resolution checks |
 | `BASE_SEPOLIA_RPC_URL` | Base Sepolia RPC for payment verification |
 | `USDC_ADDRESS_BASE_SEPOLIA` | USDC contract on Base Sepolia |
 | `AI_PROVIDER_API_KEY` | Your OpenRouter (or other) API key |
+| `DEMO_UPSTREAM_MODEL` | Optional override to force a single upstream model for demos |
 | `PROXY_SELLER_ENS` | Your ENS subname |
 | `FALLBACK_*` | Fallback config when ENS isn't available |
 
@@ -54,8 +55,9 @@ npm run dev
 | `POST` | `/v1/chat/completions` | OpenAI-compatible (x402-gated) |
 | `GET` | `/v1/models` | List available models & pricing |
 | `GET` | `/resolve/:ensName` | Resolve ENS name → proxy metadata |
-| `GET` | `/registry` | List registered proxies |
-| `POST` | `/registry` | Register a proxy `{ ensName, url }` |
+| `GET` | `/api/proxies` | List registered proxies |
+| `POST` | `/api/proxies` | Register a proxy `{ ens_name, proxy_url, wallet_address }` |
+| `GET` | `/registry` | Legacy alias for listing registered proxies |
 | `GET` | `/info` | Proxy server info |
 | `GET` | `/health` | Health check |
 
@@ -80,6 +82,8 @@ Sellers set these text records on their `.eth` subname:
 | `x402.status` | `online` |
 | `url` | `https://your-proxy.com` |
 
+Proxy registration now normalizes ENS names and verifies that the submitted wallet matches the ENS address record when `L1_RPC_URL` is configured. That keeps the database aligned with actual ENS resolution instead of accepting arbitrary name/wallet pairs.
+
 ## Testing
 
 ```bash
@@ -94,6 +98,12 @@ npm run test:client
 - **Identity**: ENS (Ethereum Name Service)
 - **Payments**: x402 protocol (HTTP 402 + on-chain USDC)
 - **AI**: OpenRouter (supports Claude, GPT, Gemini, Grok, etc.)
+
+## ENS Notes
+
+- Use normalized ENS names everywhere. Mixed-case or non-normalized names can resolve inconsistently.
+- Set an address record on the name you register so forward resolution maps the name to the proxy wallet.
+- If you want demo mode, set `DEMO_UPSTREAM_MODEL`; otherwise the proxy forwards the buyer-requested model instead of silently overriding it.
 
 ## License
 

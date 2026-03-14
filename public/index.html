@@ -164,6 +164,16 @@
           <label>Description</label>
           <textarea id="reg-desc" rows="2" placeholder="What makes your proxy stand out?"></textarea>
         </div>
+        <div class="field">
+          <label>AI Provider API Key</label>
+          <input type="password" id="reg-apikey" placeholder="sk-or-v1-... or sk-ant-..." />
+          <small style="color:var(--text3);font-size:.7rem">Your API key from OpenRouter, OpenAI, Anthropic, etc. Stored securely.</small>
+        </div>
+        <div class="field">
+          <label>API Endpoint</label>
+          <input type="text" id="reg-endpoint" placeholder="https://openrouter.ai/api/v1/chat/completions" value="https://openrouter.ai/api/v1/chat/completions" />
+          <small style="color:var(--text3);font-size:.7rem">OpenAI-compatible chat completions endpoint.</small>
+        </div>
         <button class="btn btn-accent" id="btn-register">Register Proxy</button>
         <div id="reg-result" class="form-msg"></div>
       </div>
