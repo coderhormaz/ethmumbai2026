@@ -11,7 +11,7 @@ const USDC_ADDR = process.env.USDC_ADDRESS_BASE_SEPOLIA || '0x036CbD53842c542663
 // Use a paid model that exists in DB (Claude 4.6 Sonnet) for 402 & payment tests
 // and the real OpenRouter model for the actual AI call after payment
 const PAID_MODEL = 'anthropic/claude-4.6-sonnet';
-const FREE_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free';
+const FREE_MODEL = 'openrouter/free';
 
 let pass = 0, fail = 0;
 function ok(msg) { pass++; console.log(`  ✅ PASS: ${msg}`); }

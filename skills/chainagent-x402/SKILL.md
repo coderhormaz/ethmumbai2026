@@ -52,8 +52,8 @@ This returns all available models with pricing. **Always prefer FREE models** (w
   "object": "list",
   "data": [
     {
-      "id": "nvidia/nemotron-3-super-120b-a12b:free",
-      "display_name": "Nemotron 3 Super 120B (Free)",
+      "id": "openrouter/free",
+      "display_name": "OpenRouter Free",
       "pricing": {
         "per_1k_input_tokens": "0 USDC",
         "per_1k_output_tokens": "0 USDC"
@@ -86,7 +86,7 @@ POST https://ethmumbai-brown.vercel.app/v1/chat/completions
 Content-Type: application/json
 
 {
-  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "model": "openrouter/free",
   "messages": [
     {"role": "user", "content": "What is Ethereum? Explain briefly."}
   ]
@@ -104,7 +104,7 @@ Content-Type: application/json
       }
     }
   ],
-  "model": "nvidia/nemotron-3-super-120b-a12b:free",
+  "model": "openrouter/free",
   "usage": {"prompt_tokens": 12, "completion_tokens": 85}
 }
 ```
