@@ -141,26 +141,41 @@ export async function logTransaction(tx: {
   amount_usdc: number;
   buyer_address?: string;
 }): Promise<void> {
-  await supabase.from('transactions').insert(tx);
+  // Store tx_hash in lowercase for consistent replay lookups
+  await supabase.from('transactions').insert({
+    ...tx,
+    tx_hash: tx.tx_hash.toLowerCase(),
+  });
 
-  // Increment proxy counters
+  // Increment proxy counters atomically via raw SQL to avoid race conditions.
+  // A read-then-write pattern loses updates under concurrent requests.
   if (tx.proxy_id) {
-    const { data: proxy } = await supabase
-      .from('proxies')
-      .select('total_queries, total_earned_usdc')
-      .eq('id', tx.proxy_id)
-      .single();
-
-    if (proxy) {
-      await supabase
-        .from('proxies')
-        .update({
-          total_queries: (proxy.total_queries || 0) + 1,
-          total_earned_usdc: parseFloat(String(proxy.total_earned_usdc || 0)) + tx.amount_usdc,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', tx.proxy_id);
-    }
+    await supabase.rpc('increment_proxy_counters', {
+      p_proxy_id: tx.proxy_id,
+      p_amount: tx.amount_usdc,
+    }).then(({ error }) => {
+      if (error) {
+        // Fallback to non-atomic update if RPC not available
+        console.warn('[Registry] RPC not available, using non-atomic update:', error.message);
+        return supabase
+          .from('proxies')
+          .select('total_queries, total_earned_usdc')
+          .eq('id', tx.proxy_id!)
+          .single()
+          .then(({ data: proxy }) => {
+            if (proxy) {
+              return supabase
+                .from('proxies')
+                .update({
+                  total_queries: (proxy.total_queries || 0) + 1,
+                  total_earned_usdc: parseFloat(String(proxy.total_earned_usdc || 0)) + tx.amount_usdc,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', tx.proxy_id!);
+            }
+          });
+      }
+    });
   }
 }
 

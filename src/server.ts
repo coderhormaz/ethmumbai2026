@@ -10,6 +10,7 @@ import {
   normalizeProxyUrl,
   normalizeWalletAddress,
   resolveProxyUrl,
+  resolveEnsAvatar,
   verifyEnsWalletBinding,
 } from './utils/ens';
 import {
@@ -49,10 +50,10 @@ app.get('/api/stats', async (_req, res) => {
 // ── Proxy Info ──────────────────────────────────────────────
 app.get('/info', async (_req, res) => {
   try {
-    const ensName = config.proxySellerEns || 'creditflow.eth';
+    const ensName = config.proxySellerEns || 'chainagent.eth';
     const metadata = await getProxyMetadata(ensName);
     res.json({
-      name: 'CreditFlow.eth Proxy',
+      name: 'ChainAgent Proxy',
       ensName,
       chainId: config.baseSepolia.chainId,
       network: 'Base Sepolia',
@@ -89,11 +90,23 @@ app.get('/v1/models', async (_req, res) => {
 app.get('/resolve/:ensName', async (req, res) => {
   try {
     const ensName = normalizeEnsName(req.params.ensName);
-    const [metadata, url] = await Promise.all([
+    const [metadata, url, avatar] = await Promise.all([
       getProxyMetadata(ensName),
       resolveProxyUrl(ensName),
+      resolveEnsAvatar(ensName),
     ]);
-    res.json({ ensName, url, ...metadata });
+    res.json({ ensName, url, avatar, ...metadata });
+  } catch (e: any) {
+    res.status(404).json({ error: e.message });
+  }
+});
+
+app.get('/resolve/:ensName/avatar', async (req, res) => {
+  try {
+    const ensName = normalizeEnsName(req.params.ensName);
+    const avatar = await resolveEnsAvatar(ensName);
+    if (!avatar) { res.status(404).json({ error: 'No avatar set' }); return; }
+    res.json({ ensName, avatar });
   } catch (e: any) {
     res.status(404).json({ error: e.message });
   }
@@ -190,7 +203,13 @@ app.delete('/api/models/:id', async (req, res) => {
 app.get('/registry', async (_req, res) => {
   try {
     const proxies = await listProxies();
-    res.json({ proxies });
+    // Strip API keys — same as /api/proxies
+    const safe = proxies.map(p => ({
+      ...p,
+      api_key: p.api_key ? '••••••' : '',
+      has_api_key: !!p.api_key,
+    }));
+    res.json({ proxies: safe });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
@@ -222,7 +241,7 @@ app.post('/v1/chat/completions', x402Middleware, async (req, res) => {
 app.listen(config.port, () => {
   console.log('');
   console.log('  ╔══════════════════════════════════════════════╗');
-  console.log('  ║        ⚡ CreditFlow.eth Proxy Server       ║');
+  console.log('  ║        ⚡ ChainAgent Proxy Server            ║');
   console.log('  ╠══════════════════════════════════════════════╣');
   console.log(`  ║  Port:      ${String(config.port).padEnd(33)}║`);
   console.log(`  ║  Network:   Base Sepolia (${config.baseSepolia.chainId})${' '.repeat(15)}║`);

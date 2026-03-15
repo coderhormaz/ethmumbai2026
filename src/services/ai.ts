@@ -40,8 +40,8 @@ export async function proxyChatCompletion(body: any, creds?: ProxyCredentials) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://creditflow.eth',
-        'X-Title': 'CreditFlow.eth Proxy',
+        'HTTP-Referer': 'https://chainagent.eth',
+        'X-Title': 'ChainAgent Proxy',
       },
       timeout: 120_000,
     });

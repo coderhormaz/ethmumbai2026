@@ -1,16 +1,16 @@
-// CreditFlow.eth — Full x402 Demo (REAL end-to-end with payment)
+// ChainAgent — Full x402 Demo (REAL end-to-end with payment)
 const { ethers } = require('ethers');
 require('dotenv').config();
 
 const SERVER = process.env.PROXY_URL || 'http://localhost:3000';
-const PK     = process.env.TESTER_PRIVATE_KEY || '';
-const RPC    = process.env.BASE_SEPOLIA_RPC_URL || 'https://base-sepolia-rpc.publicnode.com';
-const USDC   = process.env.USDC_ADDRESS_BASE_SEPOLIA || '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+const PK = process.env.TESTER_PRIVATE_KEY || '';
+const RPC = process.env.BASE_SEPOLIA_RPC_URL || 'https://base-sepolia-rpc.publicnode.com';
+const USDC = process.env.USDC_ADDRESS_BASE_SEPOLIA || '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 async function demo() {
   console.log('');
   console.log('====================================================');
-  console.log('  CreditFlow.eth x402 Full Demo');
+  console.log('  ChainAgent x402 Full Demo');
   console.log('====================================================');
 
   // STEP 1: Call a PAID model without payment

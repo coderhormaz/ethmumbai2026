@@ -8,17 +8,37 @@ export interface ProxyMetadata {
   recipient: string;
   url?: string;
   status?: string;
+  avatar?: string;
+  description?: string;
 }
 
 let ensProvider: ethers.JsonRpcProvider | null = null;
 
+/**
+ * Get or create an ENS-enabled provider.
+ * Per ENS docs: always specify the network to avoid resolution issues.
+ */
 function getEnsProvider(): ethers.JsonRpcProvider | null {
   if (!config.l1RpcUrl) {
     return null;
   }
 
   if (!ensProvider) {
-    ensProvider = new ethers.JsonRpcProvider(config.l1RpcUrl);
+    // Detect network from RPC URL to set correct chain for ENS resolution.
+    // ENS docs: "Specify the chain ID to whichever ENS network you're using."
+    const url = config.l1RpcUrl.toLowerCase();
+    let network: ethers.Networkish | undefined;
+
+    if (url.includes('sepolia')) {
+      network = 'sepolia';
+    } else if (url.includes('holesky')) {
+      network = 'holesky';
+    } else {
+      // Default to mainnet for ENS resolution
+      network = 'mainnet';
+    }
+
+    ensProvider = new ethers.JsonRpcProvider(config.l1RpcUrl, network);
   }
 
   return ensProvider;
@@ -97,6 +117,9 @@ export async function verifyEnsWalletBinding(ensName: string, walletAddress: str
 /**
  * Resolve proxy metadata from ENS text records.
  * Falls back to env-based config when ENS is unavailable (local dev / testnet).
+ *
+ * Reads standard ENS text records (url, avatar, description) plus custom
+ * x402.* records for pricing and payment.
  */
 export async function getProxyMetadata(ensName: string): Promise<ProxyMetadata> {
   const normalizedName = normalizeEnsName(ensName);
@@ -108,7 +131,7 @@ export async function getProxyMetadata(ensName: string): Promise<ProxyMetadata> 
       const resolver = await provider.getResolver(normalizedName);
 
       if (resolver) {
-        const [modelsRaw, priceInputRaw, priceOutputRaw, recipientRaw, urlRaw, statusRaw] =
+        const [modelsRaw, priceInputRaw, priceOutputRaw, recipientRaw, urlRaw, statusRaw, avatarRaw, descriptionRaw] =
           await Promise.all([
             resolver.getText('x402.models'),
             resolver.getText('x402.pricePer1kInput'),
@@ -116,6 +139,8 @@ export async function getProxyMetadata(ensName: string): Promise<ProxyMetadata> 
             resolver.getText('x402.recipient'),
             resolver.getText('url'),
             resolver.getText('x402.status'),
+            resolver.getText('avatar'),
+            resolver.getText('description'),
           ]);
 
         if (recipientRaw) {
@@ -127,6 +152,8 @@ export async function getProxyMetadata(ensName: string): Promise<ProxyMetadata> 
             recipient: normalizeWalletAddress(recipientRaw),
             url: urlRaw || undefined,
             status: statusRaw || 'online',
+            avatar: avatarRaw || undefined,
+            description: descriptionRaw || undefined,
           };
         }
       }
@@ -168,6 +195,24 @@ export async function resolveProxyUrl(ensName: string): Promise<string | null> {
 
     const url = await resolver.getText('url');
     return url || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve an ENS avatar for display purposes.
+ * Uses the `avatar` text record which can contain IPFS, HTTP, or NFT URIs.
+ */
+export async function resolveEnsAvatar(ensName: string): Promise<string | null> {
+  const provider = getEnsProvider();
+  if (!provider) return null;
+
+  const normalizedName = normalizeEnsName(ensName);
+
+  try {
+    const avatar = await provider.getAvatar(normalizedName);
+    return avatar || null;
   } catch {
     return null;
   }

@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CreditFlow.eth — Decentralized AI Credit Marketplace</title>
-  <meta name="description" content="Resell unused AI API credits for USDC on Base. Pay-per-query via x402 micropayments. No KYC, no subscriptions." />
+  <title>ChainAgent — Decentralized AI Agent Marketplace</title>
+  <meta name="description" content="AI agents pay-per-query in USDC on Base via x402 micropayments. No KYC, no subscriptions. ENS-powered discovery." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- Top Bar -->
   <header class="topbar">
     <div class="topbar-inner">
       <a href="#" class="logo">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-        CreditFlow<span class="logo-eth">.eth</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+        </svg>
+        Chain<span class="logo-eth">Agent</span>
       </a>
       <nav class="topnav">
         <a href="#marketplace" class="topnav-link active" data-tab="marketplace">Marketplace</a>
@@ -35,8 +41,8 @@
     <div class="hero-inner">
       <div class="hero-text">
         <div class="hero-tag">x402 Protocol × ENS × Base</div>
-        <h1>Turn Idle AI Credits<br/>Into <span class="hero-em">USDC</span></h1>
-        <p class="hero-p">Decentralized marketplace: sellers proxy their AI API keys, buyers pay per query in USDC. Anonymous, instant, no KYC.</p>
+        <h1>AI Agents Pay<br/>Per Query in <span class="hero-em">USDC</span></h1>
+        <p class="hero-p">Decentralized AI marketplace: sellers proxy their API keys, agents & buyers pay per query in USDC. Anonymous, instant, no KYC.</p>
       </div>
       <div class="stats-row">
         <div class="stat">
@@ -72,7 +78,8 @@
       <input type="text" id="search" class="search-input" placeholder="Search models, proxies..." />
     </div>
     <div class="proxy-list" id="proxy-list">
-      <div class="skel"></div><div class="skel"></div>
+      <div class="skel"></div>
+      <div class="skel"></div>
     </div>
   </section>
 
@@ -91,11 +98,14 @@
         <div class="card-label">① Send</div>
         <div class="field">
           <label>Model</label>
-          <select id="try-model"><option>Loading…</option></select>
+          <select id="try-model">
+            <option>Loading…</option>
+          </select>
         </div>
         <div class="field">
           <label>Prompt</label>
-          <textarea id="try-prompt" rows="3" placeholder="Ask anything...">What is x402 and how does CreditFlow.eth work?</textarea>
+          <textarea id="try-prompt" rows="3"
+            placeholder="Ask anything...">What is x402 and how does ChainAgent work?</textarea>
         </div>
         <button class="btn btn-accent" id="btn-send">Send Query →</button>
       </div>
@@ -128,7 +138,10 @@
 
         <!-- Empty state -->
         <div class="try-empty" id="try-empty">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            opacity=".3">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+          </svg>
           <p>Send a query to see the x402 flow in action</p>
         </div>
       </div>
@@ -167,11 +180,13 @@
         <div class="field">
           <label>AI Provider API Key</label>
           <input type="password" id="reg-apikey" placeholder="sk-or-v1-... or sk-ant-..." />
-          <small style="color:var(--text3);font-size:.7rem">Your API key from OpenRouter, OpenAI, Anthropic, etc. Stored securely.</small>
+          <small style="color:var(--text3);font-size:.7rem">Your API key from OpenRouter, OpenAI, Anthropic, etc. Stored
+            securely.</small>
         </div>
         <div class="field">
           <label>API Endpoint</label>
-          <input type="text" id="reg-endpoint" placeholder="https://openrouter.ai/api/v1/chat/completions" value="https://openrouter.ai/api/v1/chat/completions" />
+          <input type="text" id="reg-endpoint" placeholder="https://openrouter.ai/api/v1/chat/completions"
+            value="https://openrouter.ai/api/v1/chat/completions" />
           <small style="color:var(--text3);font-size:.7rem">OpenAI-compatible chat completions endpoint.</small>
         </div>
         <button class="btn btn-accent" id="btn-register">Register Proxy</button>
@@ -183,7 +198,9 @@
         <div class="card-label">Step 2 — Add Custom Model</div>
         <div class="field">
           <label>Your Proxy</label>
-          <select id="mod-proxy"><option value="">Select proxy…</option></select>
+          <select id="mod-proxy">
+            <option value="">Select proxy…</option>
+          </select>
         </div>
         <div class="field-row">
           <div class="field">
@@ -238,24 +255,44 @@
       </div>
     </div>
     <div class="flow-row">
-      <div class="flow-step"><div class="flow-n">1</div><h4>Mint ENS Subname</h4><p>Create <code>proxy.you.eth</code> with text records for models & pricing.</p></div>
+      <div class="flow-step">
+        <div class="flow-n">1</div>
+        <h4>Mint ENS Subname</h4>
+        <p>Create <code>proxy.you.eth</code> with text records for models & pricing.</p>
+      </div>
       <div class="flow-arrow">→</div>
-      <div class="flow-step"><div class="flow-n">2</div><h4>Deploy Proxy</h4><p>Run CreditFlow server with your AI API key.</p></div>
+      <div class="flow-step"><div class="flow-n">2</div><h4>Deploy Proxy</h4><p>Run ChainAgent server with your AI API key.</p></div>
       <div class="flow-arrow">→</div>
-      <div class="flow-step"><div class="flow-n">3</div><h4>Buyer Sends Prompt</h4><p>HTTP POST to <code>/v1/chat/completions</code>. No API key.</p></div>
+      <div class="flow-step">
+        <div class="flow-n">3</div>
+        <h4>Buyer Sends Prompt</h4>
+        <p>HTTP POST to <code>/v1/chat/completions</code>. No API key.</p>
+      </div>
       <div class="flow-arrow">→</div>
-      <div class="flow-step"><div class="flow-n">4</div><h4>402 Response</h4><p>Server demands USDC payment with amount & recipient.</p></div>
+      <div class="flow-step">
+        <div class="flow-n">4</div>
+        <h4>402 Response</h4>
+        <p>Server demands USDC payment with amount & recipient.</p>
+      </div>
       <div class="flow-arrow">→</div>
-      <div class="flow-step"><div class="flow-n">5</div><h4>Pay USDC</h4><p>Sub-cent transfer on Base. Instant confirmation.</p></div>
+      <div class="flow-step">
+        <div class="flow-n">5</div>
+        <h4>Pay USDC</h4>
+        <p>Sub-cent transfer on Base. Instant confirmation.</p>
+      </div>
       <div class="flow-arrow">→</div>
-      <div class="flow-step"><div class="flow-n">6</div><h4>AI Response</h4><p>Retry with tx proof. Verified → proxied to AI.</p></div>
+      <div class="flow-step">
+        <div class="flow-n">6</div>
+        <h4>AI Response</h4>
+        <p>Retry with tx proof. Verified → proxied to AI.</p>
+      </div>
     </div>
   </section>
 
   <!-- Footer -->
   <footer class="foot">
     <div class="foot-inner">
-      <span>CreditFlow.eth</span>
+      <span>ChainAgent</span>
       <span>Built for ETHMumbai 🇮🇳</span>
       <span>x402 × ENS × Base Sepolia</span>
     </div>
@@ -263,4 +300,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>

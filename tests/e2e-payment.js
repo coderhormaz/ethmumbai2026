@@ -1,11 +1,12 @@
-// CreditFlow.eth — Full E2E Payment Test
+// ChainAgent — Full E2E Payment Test
 // Tests the complete x402 flow: 402 → on-chain USDC → verified response
 const { ethers } = require('ethers');
+require('dotenv').config();
 
-const PROXY = 'http://localhost:3000';
-const PK = '3ea00398e54c00053a54808cf32514562cf7f1760c58a6ff365ec2d92a54b40c';
-const RPC = 'https://base-sepolia-rpc.publicnode.com';
-const USDC_ADDR = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+const PROXY = process.env.PROXY_URL || 'http://localhost:3000';
+const PK = process.env.TESTER_PRIVATE_KEY || '';
+const RPC = process.env.BASE_SEPOLIA_RPC_URL || 'https://base-sepolia-rpc.publicnode.com';
+const USDC_ADDR = process.env.USDC_ADDRESS_BASE_SEPOLIA || '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 // Use a paid model that exists in DB (Claude 4.6 Sonnet) for 402 & payment tests
 // and the real OpenRouter model for the actual AI call after payment
@@ -19,7 +20,7 @@ function no(msg) { fail++; console.log(`  ❌ FAIL: ${msg}`); }
 async function test() {
   console.log('');
   console.log('  =============================================');
-  console.log('    CreditFlow.eth — Full E2E Test Suite');
+  console.log('    ChainAgent — Full E2E Test Suite');
   console.log('  =============================================');
   console.log('');
 
@@ -60,7 +61,7 @@ async function test() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: FREE_MODEL,
-      messages: [{ role: 'user', content: 'Say exactly: CreditFlow works' }],
+      messages: [{ role: 'user', content: 'Say exactly: ChainAgent works' }],
     }),
   });
   d = await r.json();
@@ -86,6 +87,14 @@ async function test() {
 
   // ── T7: On-chain USDC payment ──
   console.log('[T7] On-chain USDC transfer on Base Sepolia');
+  if (!PK) {
+    console.log('  ⚠️  TESTER_PRIVATE_KEY not set in .env — skipping on-chain payment tests.');
+    console.log('  Set TESTER_PRIVATE_KEY in your .env file to run the full payment flow.');
+    console.log(`\n  =============================================`);
+    console.log(`    Results: ${pass} passed, ${fail} failed (payment tests skipped)`);
+    console.log(`  =============================================`);
+    return;
+  }
   const provider = new ethers.JsonRpcProvider(RPC);
   const wallet = new ethers.Wallet(PK, provider);
   const usdc = new ethers.Contract(USDC_ADDR, ['function transfer(address,uint256) returns (bool)'], wallet);
@@ -152,7 +161,7 @@ async function test() {
   r = await fetch(`${PROXY}/`);
   const html = await r.text();
   r.status === 200 ? ok('index.html served') : no('Frontend not served');
-  html.includes('CreditFlow') ? ok('Contains CreditFlow branding') : no('No branding found');
+  html.includes('ChainAgent') ? ok('Contains ChainAgent branding') : no('No branding found');
 
   // ── Summary ──
   console.log('');

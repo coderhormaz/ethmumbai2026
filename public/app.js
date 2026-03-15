@@ -1,46 +1,46 @@
 /* ═══════════════════════════════════════════════════════════
-   CreditFlow.eth — Frontend Logic (Precision Terminal)
+   ChainAgent — Frontend Logic (Precision Terminal)
    ═══════════════════════════════════════════════════════════ */
 
 const API = window.location.origin;
 const $ = id => document.getElementById(id);
 
 const dom = {
-  sProxies:    $('s-proxies'),
-  sModels:     $('s-models'),
-  sVolume:     $('s-volume'),
-  sTxns:       $('s-txns'),
-  proxyList:   $('proxy-list'),
-  search:      $('search'),
-  regEns:      $('reg-ens'),
-  regUrl:      $('reg-url'),
-  regWallet:   $('reg-wallet'),
-  regDesc:     $('reg-desc'),
-  regApiKey:   $('reg-apikey'),
+  sProxies: $('s-proxies'),
+  sModels: $('s-models'),
+  sVolume: $('s-volume'),
+  sTxns: $('s-txns'),
+  proxyList: $('proxy-list'),
+  search: $('search'),
+  regEns: $('reg-ens'),
+  regUrl: $('reg-url'),
+  regWallet: $('reg-wallet'),
+  regDesc: $('reg-desc'),
+  regApiKey: $('reg-apikey'),
   regEndpoint: $('reg-endpoint'),
   btnRegister: $('btn-register'),
-  regResult:   $('reg-result'),
-  modProxy:    $('mod-proxy'),
-  modId:       $('mod-id'),
-  modName:     $('mod-name'),
+  regResult: $('reg-result'),
+  modProxy: $('mod-proxy'),
+  modId: $('mod-id'),
+  modName: $('mod-name'),
   modProvider: $('mod-provider'),
-  modInput:    $('mod-input'),
-  modOutput:   $('mod-output'),
-  modCtx:      $('mod-ctx'),
+  modInput: $('mod-input'),
+  modOutput: $('mod-output'),
+  modCtx: $('mod-ctx'),
   btnAddModel: $('btn-add-model'),
-  modResult:   $('mod-result'),
-  tryModel:    $('try-model'),
-  tryPrompt:   $('try-prompt'),
-  btnSend:     $('btn-send'),
-  card402:     $('card-402'),
-  pre402:      $('pre-402'),
-  tryTx:       $('try-tx'),
-  btnRetry:    $('btn-retry'),
-  cardOk:      $('card-ok'),
-  preOk:       $('pre-ok'),
-  cardErr:     $('card-err'),
-  preErr:      $('pre-err'),
-  tryEmpty:    $('try-empty'),
+  modResult: $('mod-result'),
+  tryModel: $('try-model'),
+  tryPrompt: $('try-prompt'),
+  btnSend: $('btn-send'),
+  card402: $('card-402'),
+  pre402: $('pre-402'),
+  tryTx: $('try-tx'),
+  btnRetry: $('btn-retry'),
+  cardOk: $('card-ok'),
+  preOk: $('pre-ok'),
+  cardErr: $('card-err'),
+  preErr: $('pre-err'),
+  tryEmpty: $('try-empty'),
 };
 
 let lastPayload = null;
@@ -71,7 +71,7 @@ async function loadStats() {
     anim(dom.sModels, d.models_available);
     dom.sVolume.textContent = `$${d.total_volume_usdc.toFixed(2)}`;
     anim(dom.sTxns, d.total_transactions);
-  } catch {}
+  } catch { }
 }
 function anim(el, target) {
   const dur = 500, start = performance.now();
@@ -275,7 +275,7 @@ function hideCards() {
 }
 
 function showErr(msg) {
-  try { msg = JSON.stringify(JSON.parse(msg), null, 2); } catch {}
+  try { msg = JSON.stringify(JSON.parse(msg), null, 2); } catch { }
   dom.preErr.textContent = msg;
   dom.cardErr.style.display = 'block';
 }

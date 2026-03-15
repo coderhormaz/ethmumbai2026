@@ -1,15 +1,17 @@
-# CreditFlow.eth ⚡
+# ChainAgent ⚡
 
-> **Decentralised AI Credit Marketplace** — Resell unused AI API credits for instant USDC on Base using ENS discovery and x402 micropayments.
+> **Decentralised AI Agent Marketplace** — AI agents pay-per-query in USDC on Base via x402 micropayments. ENS-powered discovery, no KYC, no subscriptions.
+
+**Live**: [https://ethmumbai-brown.vercel.app](https://ethmumbai-brown.vercel.app)
 
 ## What is this?
 
-Sellers run a proxy server backed by their AI API keys (OpenRouter, Anthropic, OpenAI, etc.). Buyers pay micro-USDC per query on Base Sepolia — no accounts, no KYC, no wasted subscriptions. Discovery happens via ENS subnames like `claude-proxy.abdul.eth`.
+Sellers run a proxy server backed by their AI API keys (OpenRouter, Anthropic, OpenAI, etc.). AI agents and buyers pay micro-USDC per query on Base Sepolia — no accounts, no KYC, no wasted subscriptions. Discovery happens via ENS subnames like `claude-proxy.abdul.eth`.
 
 ## Architecture
 
 ```
-Buyer / Agent                    CreditFlow Proxy                    AI Provider
+Buyer / Agent                    ChainAgent Proxy                    AI Provider
 ─────────────                    ────────────────                    ───────────
 POST /v1/chat/completions  →→→  [x402 Middleware]
                                  ├─ No payment? → 402 + USDC demand
@@ -54,7 +56,8 @@ npm run dev
 |---|---|---|
 | `POST` | `/v1/chat/completions` | OpenAI-compatible (x402-gated) |
 | `GET` | `/v1/models` | List available models & pricing |
-| `GET` | `/resolve/:ensName` | Resolve ENS name → proxy metadata |
+| `GET` | `/resolve/:ensName` | Resolve ENS name → proxy metadata + avatar |
+| `GET` | `/resolve/:ensName/avatar` | Get ENS avatar for a name |
 | `GET` | `/api/proxies` | List registered proxies |
 | `POST` | `/api/proxies` | Register a proxy `{ ens_name, proxy_url, wallet_address }` |
 | `GET` | `/registry` | Legacy alias for listing registered proxies |
@@ -81,6 +84,8 @@ Sellers set these text records on their `.eth` subname:
 | `x402.recipient` | `0xYourWallet` |
 | `x402.status` | `online` |
 | `url` | `https://your-proxy.com` |
+| `avatar` | NFT/IPFS/HTTP avatar URI |
+| `description` | Human-readable proxy description |
 
 Proxy registration now normalizes ENS names and verifies that the submitted wallet matches the ENS address record when `L1_RPC_URL` is configured. That keeps the database aligned with actual ENS resolution instead of accepting arbitrary name/wallet pairs.
 
@@ -104,6 +109,8 @@ npm run test:client
 - Use normalized ENS names everywhere. Mixed-case or non-normalized names can resolve inconsistently.
 - Set an address record on the name you register so forward resolution maps the name to the proxy wallet.
 - If you want demo mode, set `DEMO_UPSTREAM_MODEL`; otherwise the proxy forwards the buyer-requested model instead of silently overriding it.
+- The ENS provider automatically detects the network (mainnet/sepolia/holesky) from your `L1_RPC_URL`. Always ensure your RPC matches your ENS names.
+- ENS avatars are resolved via the standard `avatar` text record. Set one on your ENS name for better discoverability.
 
 ## License
 

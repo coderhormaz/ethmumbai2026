@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { config } from '../config';
 import { listAllModels } from '../services/registry';
+import { supabase } from '../services/supabase';
+import { verifyPayment } from '../utils/verifier';
+import { logTransaction } from '../services/registry';
 
 /**
  * x402 Payment-Required middleware.
@@ -38,7 +41,6 @@ export async function x402Middleware(
         parseFloat(String(match.price_per_1k_input)) +
         parseFloat(String(match.price_per_1k_output));
       // Get the proxy's wallet and API credentials
-      const { supabase } = await import('../services/supabase');
       const { data: proxy } = await supabase
         .from('proxies')
         .select('wallet_address, api_key, api_endpoint')
@@ -63,7 +65,6 @@ export async function x402Middleware(
       console.log(`[x402] Free model "${requestedModel}" — skipping payment.`);
       // Still attach creds for free models
       if (!(req as any)._proxyCreds && match) {
-        const { supabase } = await import('../services/supabase');
         const { data: px } = await supabase.from('proxies').select('api_key, api_endpoint').eq('id', match.proxy_id).single();
         (req as any)._proxyCreds = { api_key: px?.api_key || '', api_endpoint: px?.api_endpoint || '' };
       }
@@ -102,8 +103,23 @@ export async function x402Middleware(
       return;
     }
 
+    // Check DB-based replay guard (survives restarts, works across instances)
+    const { data: existingTx } = await supabase
+      .from('transactions')
+      .select('id')
+      .eq('tx_hash', paymentProof.toLowerCase())
+      .maybeSingle();
+
+    if (existingTx) {
+      console.warn(`[x402] Replay blocked (DB): ${paymentProof}`);
+      res.status(402).json({
+        error: 'Payment verification failed',
+        message: 'This transaction has already been used. Please send a new payment.',
+      });
+      return;
+    }
+
     // Verify on-chain
-    const { verifyPayment } = await import('../utils/verifier');
     console.log(`[x402] Verifying payment proof: ${paymentProof}`);
     const valid = await verifyPayment(paymentProof, recipient, costPerRequest);
 
@@ -117,7 +133,6 @@ export async function x402Middleware(
     }
 
     // Log the transaction
-    const { logTransaction } = await import('../services/registry');
     await logTransaction({
       tx_hash: paymentProof,
       proxy_id: match?.proxy_id,

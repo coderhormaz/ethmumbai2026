@@ -8,12 +8,12 @@ const MODEL = process.env.TEST_MODEL || 'claude-3.5-sonnet';
 
 const COLORS = {
   reset: '\x1b[0m',
-  cyan:  '\x1b[36m',
+  cyan: '\x1b[36m',
   green: '\x1b[32m',
-  yellow:'\x1b[33m',
-  red:   '\x1b[31m',
-  dim:   '\x1b[2m',
-  bold:  '\x1b[1m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  dim: '\x1b[2m',
+  bold: '\x1b[1m',
 };
 
 function log(color: string, label: string, msg: string) {
@@ -21,7 +21,7 @@ function log(color: string, label: string, msg: string) {
 }
 
 async function runTest() {
-  console.log(`\n${COLORS.bold}═══  CreditFlow.eth Client Test  ═══${COLORS.reset}\n`);
+  console.log(`\n${COLORS.bold}═══  ChainAgent Client Test  ═══${COLORS.reset}\n`);
 
   // ── Step 1: Send query without payment ───────────────────
   log(COLORS.cyan, 'STEP 1', `Sending query to ${PROXY_URL}/v1/chat/completions (model: ${MODEL})`);
